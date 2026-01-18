@@ -20,7 +20,7 @@ import java.util.UUID;
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     @Value("${security.refresh-token-valid-days}")
-    private static int REFRESH_TOKEN_VALID_DAYS;
+    private int REFRESH_TOKEN_VALID_DAYS;
 
     private final BCryptPasswordEncoder encoder;
     private final RefreshTokenRepository refreshTokenRepository;
