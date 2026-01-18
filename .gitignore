@@ -32,7 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 
-### Spring Boot env-specific configs ###
-application.properties
-application-*.properties
+# Ignore ONLY local override configs
+application-local.properties
+application-dev.properties
 
