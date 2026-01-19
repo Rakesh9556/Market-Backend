@@ -34,5 +34,4 @@ build/
 
 # Ignore ONLY local override configs
 application-local.properties
-application-dev.properties
 

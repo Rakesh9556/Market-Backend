@@ -10,8 +10,6 @@ import org.rakeshg.retailstore.common.exception.business_exception.InvalidOtpExc
 import org.rakeshg.retailstore.common.exception.business_exception.OtpExpiredException;
 import org.rakeshg.retailstore.common.exception.business_exception.OtpNotFoundException;
 import org.rakeshg.retailstore.common.exception.business_exception.OtpRateLimitExceededException;
-import org.rakeshg.retailstore.notification.service.SmsSenderService;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
