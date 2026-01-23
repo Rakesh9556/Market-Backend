@@ -2,7 +2,8 @@ package org.rakeshg.retailstore.store.store.service.impl;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.rakeshg.retailstore.store.store.command.CreateStoreCommand;
+import org.rakeshg.retailstore.common.exception.BusinessException;
+import org.rakeshg.retailstore.store.store.command.OnboardStoreCommand;
 import org.rakeshg.retailstore.store.store.model.Store;
 import org.rakeshg.retailstore.store.store.service.OnboardingService;
 import org.rakeshg.retailstore.store.store.service.StoreService;
@@ -18,13 +19,19 @@ public class OnboardServiceImpl implements OnboardingService {
 
     @Transactional
     @Override
-    public void onboardStore(Long userId, CreateStoreCommand command) {
+    public void onboardStore(Long userId, OnboardStoreCommand command) {
+
+        // Check if store already exist for the user
+        boolean alreadyOnboarded = userService.storeExistByUserId(userId);
+        if(alreadyOnboarded) {
+            throw new BusinessException("Store already onboarded", "STORE_ALREADY_EXISTS");
+        }
 
         // Create store
         Store store = storeService.createStore(command);
 
         // Attach store to user
-        userService.attachStore(userId, store.getId());
+        userService.attachStore(userId, store.getId(), command.getOwner());
 
     }
 }

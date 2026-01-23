@@ -1,15 +1,14 @@
 package org.rakeshg.retailstore.auth.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.rakeshg.retailstore.auth.dto.AuthResponse;
-import org.rakeshg.retailstore.auth.dto.SendOtpResponse;
+import org.rakeshg.retailstore.auth.dto.response.AuthResponse;
+import org.rakeshg.retailstore.auth.dto.response.SendOtpResponse;
 import org.rakeshg.retailstore.auth.model.RefreshToken;
 import org.rakeshg.retailstore.auth.service.AuthService;
 import org.rakeshg.retailstore.auth.service.JwtService;
 import org.rakeshg.retailstore.auth.service.OtpService;
 import org.rakeshg.retailstore.auth.service.RefreshTokenService;
-import org.rakeshg.retailstore.common.exception.business_exception.InactiveUserException;
-import org.rakeshg.retailstore.common.exception.business_exception.UserNotFoundException;
+import org.rakeshg.retailstore.common.exception.AuthException;
 import org.rakeshg.retailstore.user.model.User;
 import org.rakeshg.retailstore.user.repository.UserRepository;
 import org.rakeshg.retailstore.user.service.UserService;
@@ -52,17 +51,17 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public AuthResponse verifyOtpAndLogin(String phone,String name, String otp) {
+    public AuthResponse verifyOtpAndLogin(String phone, String otp) {
         // Verify otp
         otpService.validateOtp(phone, otp);
 
         // Retrieve user
         User user = userRepository.findByPhone(phone)
-                .orElseGet(() -> userService.createOwnerUser(phone,name));
+                .orElseGet(() -> userService.createOwnerUser(phone));
 
         // Check user is active
         if(!Boolean.TRUE.equals(user.getActive())) {
-            throw new InactiveUserException();
+            throw new AuthException("User is inactive", "INACTIVE_USER");
         }
 
         // Issue tokens
@@ -87,10 +86,10 @@ public class AuthServiceImpl implements AuthService {
         RefreshToken session = refreshTokenService.validateAndGet(refreshToken);
 
         User user = userRepository.findById(session.getUserId())
-                .orElseThrow(UserNotFoundException::new);
+                .orElseThrow(() -> new AuthException("User not found", "USER_NOT_FOUND"));
 
         if(!Boolean.TRUE.equals(user.getActive())) {
-            throw new InactiveUserException();
+            throw new AuthException("User is inactive", "INACTIVE_USER");
         }
 
         String accessToken = jwtService.generate(user);

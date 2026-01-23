@@ -6,10 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.rakeshg.retailstore.auth.repository.OtpSessionRepository;
 import org.rakeshg.retailstore.auth.model.OtpSession;
 import org.rakeshg.retailstore.auth.service.OtpService;
-import org.rakeshg.retailstore.common.exception.business_exception.InvalidOtpException;
-import org.rakeshg.retailstore.common.exception.business_exception.OtpExpiredException;
-import org.rakeshg.retailstore.common.exception.business_exception.OtpNotFoundException;
-import org.rakeshg.retailstore.common.exception.business_exception.OtpRateLimitExceededException;
+import org.rakeshg.retailstore.common.exception.BusinessException;
+import org.rakeshg.retailstore.common.exception.AuthException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -77,23 +75,20 @@ public class OtpServiceImpl implements OtpService {
     public void validateOtp(String phone, String otp) {
         // Check otp exist for the given phone or not
         OtpSession session = otpSessionRepository.findTopByPhoneAndUsedFalseOrderByExpiresAtDesc(phone)
-                .orElseThrow(OtpNotFoundException::new);
+                .orElseThrow(() -> new AuthException("OTP not found", "OTP_NOT_FOUND"));
 
         // Check the present otp is valid or not
         if(session.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new OtpExpiredException();
+            throw new AuthException("Otp expired", "OTP_EXPIRED");
         }
 
         // validate the otp with session otp
         if(!passwordEncoder.matches(otp, session.getHashedOtp())) {
-            throw new InvalidOtpException();
+            throw new AuthException("Invalid OTP", "OTP_INVALID");
         }
 
         // if valid: mark it as used
         session.setUsed(true);
-        otpSessionRepository.save(session);
-        log.info("Otp validated successfully");
-
     }
 
     @Override
@@ -108,7 +103,7 @@ public class OtpServiceImpl implements OtpService {
         );
 
         if (activeOtpCount >= MAX_ACTIVE_OTP_PER_PHONE) {
-            throw new OtpRateLimitExceededException();
+            throw new BusinessException("Otp limit exceeds", "OTP_LIMIT_EXCEEDS");
         }
     }
 }

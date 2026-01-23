@@ -46,5 +46,4 @@ public class RefreshToken {
 
     @Column(nullable = false)
     private Boolean revoked;
-
 }

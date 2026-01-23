@@ -5,11 +5,19 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.rakeshg.retailstore.store.product.UnitType;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "products")
+@Table(
+        name = "products",
+        indexes = {
+                @Index(name = "idx_store_product_active", columnList = "store_id, active"),
+                @Index(name = "idx_product_last_sold", columnList = "last_sold_at")
+        }
+)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,24 +28,35 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String sku;
+    @Column(name = "store_id", nullable = false)
+    private Long storeId;
 
     @Column(nullable = false)
     private String name;
 
-    @Column(unique = true)
-    private String barcode;
-
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private ProductCategory category;
-
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Integer stock;
+    private UnitType unit;
 
+    private String category;
+
+    @Column(nullable = false)
+    private BigDecimal stock;
+
+    @Column(nullable = false)
+    private Integer soldCount;
+
+    @Column
+    private LocalDateTime lastSoldAt;
+
+    @Column(nullable = false)
     private Boolean active;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

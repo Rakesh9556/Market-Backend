@@ -1,7 +1,14 @@
 package org.rakeshg.retailstore.common.exception;
 
 public class BusinessException extends RuntimeException {
-    protected BusinessException(String message) {
+    private final String code;
+
+    public BusinessException(String message, String code) {
         super(message);
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
     }
 }

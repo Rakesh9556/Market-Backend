@@ -15,8 +15,6 @@ import org.rakeshg.retailstore.common.enums.UserRole;
         },
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "phone"),
-                @UniqueConstraint(columnNames = "email")
-
         }
 )
 @Data
@@ -31,7 +29,7 @@ public class User {
     @Column(unique = true, nullable = false)
     private String phone;
 
-    @Column(nullable = false)
+    @Column
     private String name;
 
     @Column(name = "store_id")

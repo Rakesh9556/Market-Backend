@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.rakeshg.retailstore.auth.model.RefreshToken;
 import org.rakeshg.retailstore.auth.repository.RefreshTokenRepository;
 import org.rakeshg.retailstore.auth.service.RefreshTokenService;
+import org.rakeshg.retailstore.common.exception.AuthException;
 import org.rakeshg.retailstore.user.model.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -51,29 +52,29 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
         String[] parts = rawToken.split("\\.");
 
         if(parts.length != 2) {
-            throw new SecurityException("Invalid refresh token format");
+            throw new AuthException("Invalid refresh token format", "INVALID_REFRESH_TOKEN_FORMAT");
         }
 
         String selector = parts[0];
         String verifier = parts[1];
 
         RefreshToken token = refreshTokenRepository.findBySelector(selector)
-                .orElseThrow(() -> new SecurityException("Invalid refresh token"));
+                .orElseThrow(() -> new AuthException("Invalid refresh token", "INVALID_REFRESH_TOKEN"));
 
         if(Boolean.TRUE.equals(token.getRevoked())) {
-            throw new SecurityException("Refresh token revoked");
+            throw new AuthException("Refresh token revoked", "REFRESH_TOKEN_REVOKED");
         }
 
         if(Boolean.TRUE.equals(token.getRotated())) {
-            throw new SecurityException("Refresh token reuse detected");
+            throw new AuthException("Refresh token reuse detected", "REFRESH_TOKEN_REUSE_DETECTED");
         }
 
         if(token.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new SecurityException("Refresh token expired");
+            throw new AuthException("Refresh token expired", "REFRESH_TOKEN_EXPIRED");
         }
 
         if(!encoder.matches(verifier, token.getHashedVerifier())) {
-            throw new SecurityException("Invalid refresh token");
+            throw new AuthException("Invalid refresh token", "INVALID_REFRESH_TOKEN");
         }
 
         return token;

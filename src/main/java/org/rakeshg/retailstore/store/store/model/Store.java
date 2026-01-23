@@ -7,16 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(
-        name = "stores",
-        indexes = {
-                @Index(name = "idx_store_phone", columnList = "phone")
-        },
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "phone"),
-                @UniqueConstraint(columnNames = "email")
-        }
-)
+@Table(name = "stores")
 @Data
 @Builder
 @AllArgsConstructor
@@ -28,12 +19,6 @@ public class Store {
 
     @Column(nullable = false)
     private String name;
-
-    @Column(unique = true)
-    private String email;
-
-    @Column(nullable = false)
-    private String phone;
 
     @Column(nullable = false)
     private String address;
