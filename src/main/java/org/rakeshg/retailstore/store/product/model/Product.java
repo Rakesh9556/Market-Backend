@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
         name = "products",
         indexes = {
                 @Index(name = "idx_store_product_active", columnList = "store_id, active"),
-                @Index(name = "idx_product_last_sold", columnList = "last_sold_at")
+                @Index(name = "idx_store_product_name", columnList = "store_id, name")
         }
 )
 @Data
@@ -42,15 +42,6 @@ public class Product {
     private UnitType unit;
 
     private String category;
-
-    @Column(nullable = false)
-    private BigDecimal stock;
-
-    @Column(nullable = false)
-    private Integer soldCount;
-
-    @Column
-    private LocalDateTime lastSoldAt;
 
     @Column(nullable = false)
     private Boolean active;

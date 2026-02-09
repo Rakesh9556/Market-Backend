@@ -5,7 +5,6 @@ import org.rakeshg.retailstore.store.sales.dto.response.SaleDetailResponse;
 import org.rakeshg.retailstore.store.sales.dto.response.SaleResponse;
 import org.rakeshg.retailstore.store.sales.dto.response.TodaySaleResponse;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface SaleService {
@@ -13,4 +12,6 @@ public interface SaleService {
     List<SaleResponse> getSales(Long storeId);
     SaleDetailResponse getSaleById(Long storeId, Long saleId);
     TodaySaleResponse getTodaySales(Long storeId);
+    TodaySaleResponse getYesterdaySales(Long storeId);
+    List<SaleResponse> getTodayTop3Sales(Long storeId);
 }

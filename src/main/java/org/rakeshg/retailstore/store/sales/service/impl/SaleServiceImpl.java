@@ -3,9 +3,10 @@ package org.rakeshg.retailstore.store.sales.service.impl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.rakeshg.retailstore.common.exception.BusinessException;
+import org.rakeshg.retailstore.inventory.service.InventoryService;
 import org.rakeshg.retailstore.store.product.UnitType;
 import org.rakeshg.retailstore.store.product.model.Product;
-import org.rakeshg.retailstore.store.product.repository.ProductRepository;
+import org.rakeshg.retailstore.store.product.service.ProductService;
 import org.rakeshg.retailstore.store.sales.command.CreateSaleCommand;
 import org.rakeshg.retailstore.store.sales.command.CreateSaleItemCommand;
 import org.rakeshg.retailstore.store.sales.dto.response.SaleDetailResponse;
@@ -30,8 +31,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SaleServiceImpl implements SaleService {
     private final SaleRepository saleRepository;
-    private final ProductRepository productRepository;
     private final SaleItemRepository saleItemRepository;
+    private final ProductService productService;
+    private final InventoryService inventoryService;
 
     @Transactional
     @Override
@@ -58,7 +60,7 @@ public class SaleServiceImpl implements SaleService {
         for(CreateSaleItemCommand itemCommand : command.getItems()) {
 
             // find product
-            Product product = productRepository.findByIdAndStoreId(itemCommand.getProductId(), storeId)
+            Product product = productService.findByIdAndStoreId(itemCommand.getProductId(), storeId)
                     .orElseThrow(() -> new BusinessException("Product not found", "PRODUCT_NOT_FOUND"));
 
             // Calculate product sale price
@@ -78,10 +80,8 @@ public class SaleServiceImpl implements SaleService {
             // Add sale items to list
             saleItems.add(saleItem);
 
-            // Update stock
-            product.setStock(
-                    product.getStock().subtract(saleItem.getQuantity())
-            );
+            // Update stock in inventory
+            inventoryService.deductStock(storeId, product.getId(), itemCommand.getQuantity());
 
             // calculate total sale amount and total distinct items
             totalAmount = totalAmount.add(productSalePrice);
@@ -136,12 +136,32 @@ public class SaleServiceImpl implements SaleService {
     @Override
     public TodaySaleResponse getTodaySales(Long storeId) {
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
+        return getTodaySaleResponse(storeId, today);
+    }
+
+    @Override
+    public TodaySaleResponse getYesterdaySales(Long storeId) {
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata")).minusDays(1);
+        return getTodaySaleResponse(storeId, today);
+    }
+
+    @Override
+    public List<SaleResponse> getTodayTop3Sales(Long storeId) {
+        return saleRepository.findTop3ByStoreIdOrderByCreatedAtDesc(storeId)
+                .stream()
+                .map(this:: toSaleResponse)
+                .toList();
+    }
+
+    private TodaySaleResponse getTodaySaleResponse(Long storeId, LocalDate today) {
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = start.plusDays(1);
 
-
         BigDecimal totalAmount = saleRepository.getTodayTotalSales(storeId, start, end);
         Integer totalSales = saleRepository.countByStoreIdAndCreatedAtBetween(storeId, start, end);
+
+        if(totalAmount == null) totalAmount = BigDecimal.ZERO;
+        if(totalSales == null) totalSales = 0;
 
         return TodaySaleResponse.builder()
                 .totalAmount(totalAmount)

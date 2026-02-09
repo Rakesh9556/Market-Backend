@@ -29,4 +29,5 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
     );
     List<Sale> findByStoreIdOrderByCreatedAtDesc(Long storeId);
     Optional<Sale> findByIdAndStoreId(Long id, Long storeId);
+    List<Sale> findTop3ByStoreIdOrderByCreatedAtDesc(Long storeId);
 }

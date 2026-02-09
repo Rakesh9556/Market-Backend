@@ -3,9 +3,8 @@ package org.rakeshg.retailstore.store.product.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.rakeshg.retailstore.security.principal.AuthUser;
-import org.rakeshg.retailstore.store.product.UnitType;
-import org.rakeshg.retailstore.store.product.command.CreateProductCommand;
 import org.rakeshg.retailstore.store.product.dto.request.CreateProductRequest;
+import org.rakeshg.retailstore.store.product.dto.response.ProductResponse;
 import org.rakeshg.retailstore.store.product.model.Product;
 import org.rakeshg.retailstore.store.product.service.ProductService;
 import org.springframework.http.HttpStatus;
@@ -23,19 +22,13 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping("/create")
-    public ResponseEntity<Product> createProduct(
+    public ResponseEntity<ProductResponse> createProduct(
             @AuthenticationPrincipal AuthUser authUser,
             @Valid @RequestBody CreateProductRequest request
     ) {
 
-        CreateProductCommand command = CreateProductCommand.builder()
-                .name(request.getName())
-                .price(request.getPrice())
-                .unit(UnitType.valueOf(request.getUnit().toUpperCase()))
-                .category(request.getCategory())
-                .build();
-
-        return new ResponseEntity<>(productService.addProduct(authUser.getStoreId(), command), HttpStatus.CREATED);
+        Product product = productService.addProduct(authUser.getStoreId(), request.toCommand());
+        return ResponseEntity.status(HttpStatus.CREATED).body(ProductResponse.from(product));
     }
 
     @GetMapping("/get")

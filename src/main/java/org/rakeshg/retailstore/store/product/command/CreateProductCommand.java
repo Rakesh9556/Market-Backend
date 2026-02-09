@@ -13,4 +13,6 @@ public class CreateProductCommand {
     private BigDecimal price;
     private UnitType unit;
     private String category;
+    private BigDecimal openingStock;
+    private BigDecimal reorderLevel;
 }
